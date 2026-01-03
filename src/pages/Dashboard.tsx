@@ -57,8 +57,15 @@ interface RecentEmployee {
   created_at: string;
 }
 
+interface OnlineAdmin {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  avatar_url: string | null;
+}
+
 export default function Dashboard() {
-  const { profile, role } = useAuth();
+  const { profile, role, user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats>({
     totalDays: 0,
@@ -75,6 +82,7 @@ export default function Dashboard() {
   });
   const [recentLeaves, setRecentLeaves] = useState<RecentLeaveRequest[]>([]);
   const [recentEmployees, setRecentEmployees] = useState<RecentEmployee[]>([]);
+  const [onlineAdmins, setOnlineAdmins] = useState<OnlineAdmin[]>([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -173,6 +181,56 @@ export default function Dashboard() {
 
     fetchStats();
   }, [profile, role]);
+
+  // Track online admins using Supabase Realtime Presence
+  useEffect(() => {
+    if (!user || role !== 'admin') return;
+
+    const channel = supabase.channel('online-admins', {
+      config: {
+        presence: {
+          key: user.id,
+        },
+      },
+    });
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const presenceState = channel.presenceState();
+        const admins: OnlineAdmin[] = [];
+        
+        Object.values(presenceState).forEach((presences: any) => {
+          presences.forEach((presence: any) => {
+            if (presence.role === 'admin') {
+              admins.push({
+                user_id: presence.user_id,
+                first_name: presence.first_name,
+                last_name: presence.last_name,
+                avatar_url: presence.avatar_url,
+              });
+            }
+          });
+        });
+        
+        setOnlineAdmins(admins);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && profile) {
+          await channel.track({
+            user_id: user.id,
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            avatar_url: profile.avatar_url,
+            role: role,
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, role, profile]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -375,6 +433,44 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Online Admins */}
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                <CardTitle className="text-lg font-semibold">Online Admins</CardTitle>
+              </div>
+              <CardDescription>Currently active administrators</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {onlineAdmins.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {onlineAdmins.map((admin) => (
+                    <div 
+                      key={admin.user_id} 
+                      className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200"
+                    >
+                      <div className="relative">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={admin.avatar_url || undefined} />
+                          <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                            {getInitials(admin.first_name, admin.last_name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-green-500 border-2 border-white" />
+                      </div>
+                      <span className="text-sm font-medium">
+                        {admin.first_name} {admin.last_name}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-sm">No other admins online</p>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Quick Overview */}
           <Card className="bg-gradient-to-r from-primary/5 to-secondary/30 border-primary/20">
