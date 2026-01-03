@@ -82,91 +82,86 @@ export default function LeaveApprovals() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-green-600">Approved</Badge>;
+        return <Badge className="status-approved">Approved</Badge>;
       case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge className="status-rejected">Rejected</Badge>;
       default:
-        return <Badge variant="secondary" className="bg-yellow-600">Pending</Badge>;
+        return <Badge className="status-pending">Pending</Badge>;
     }
   };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Leave Approvals</h1>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>All Leave Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : requests.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No leave requests found.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>From</TableHead>
-                    <TableHead>To</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold">All Leave Requests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : requests.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No leave requests found.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="uppercase text-xs font-semibold">Employee</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">Leave Type</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">From</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">To</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">Reason</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">Status</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{request.profiles.first_name} {request.profiles.last_name}</p>
+                        <p className="text-xs text-muted-foreground">{request.profiles.employee_id}</p>
+                      </div>
+                    </TableCell>
+                    <TableCell className="capitalize">{request.leave_type} Leave</TableCell>
+                    <TableCell>{format(new Date(request.from_date), 'MMM d, yyyy')}</TableCell>
+                    <TableCell>{format(new Date(request.to_date), 'MMM d, yyyy')}</TableCell>
+                    <TableCell className="max-w-[150px] truncate">{request.reason || '-'}</TableCell>
+                    <TableCell>{getStatusBadge(request.status)}</TableCell>
+                    <TableCell>
+                      {request.status === 'pending' ? (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="h-8 w-8 p-0 bg-[hsl(145,63%,49%)] hover:bg-[hsl(145,63%,44%)]"
+                            onClick={() => updateStatus(request.id, 'approved')}
+                            disabled={updating === request.id}
+                          >
+                            {updating === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            className="h-8 w-8 p-0"
+                            onClick={() => updateStatus(request.id, 'rejected')}
+                            disabled={updating === request.id}
+                          >
+                            {updating === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">-</span>
+                      )}
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {requests.map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell className="font-medium">
-                        {request.profiles.first_name} {request.profiles.last_name}
-                        <br />
-                        <span className="text-xs text-muted-foreground">{request.profiles.employee_id}</span>
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        {request.leave_type}
-                        {request.is_half_day && <span className="text-xs text-muted-foreground block">(Half Day)</span>}
-                      </TableCell>
-                      <TableCell>{format(new Date(request.from_date), 'MMM d, yyyy')}</TableCell>
-                      <TableCell>{format(new Date(request.to_date), 'MMM d, yyyy')}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{request.reason || '-'}</TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>
-                        {request.status === 'pending' ? (
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700"
-                              onClick={() => updateStatus(request.id, 'approved')}
-                              disabled={updating === request.id}
-                            >
-                              {updating === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => updateStatus(request.id, 'rejected')}
-                              disabled={updating === request.id}
-                            >
-                              {updating === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        ) : (
-                          <span className="text-muted-foreground text-sm">-</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </DashboardLayout>
   );
 }

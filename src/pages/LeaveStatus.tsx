@@ -48,59 +48,53 @@ export default function LeaveStatus() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <Badge className="bg-green-600">Approved</Badge>;
+        return <Badge className="status-approved">Approved</Badge>;
       case 'rejected':
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge className="status-rejected">Rejected</Badge>;
       default:
-        return <Badge variant="secondary" className="bg-yellow-600">Pending</Badge>;
+        return <Badge className="status-pending">Pending</Badge>;
     }
   };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Leave Status</h1>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>My Leave Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : requests.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No leave requests found.</p>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Type</TableHead>
-                    <TableHead>From</TableHead>
-                    <TableHead>To</TableHead>
-                    <TableHead>Duration</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Applied On</TableHead>
+      <Card className="shadow-sm">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-semibold">My Leave Requests</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : requests.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No leave requests found.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="uppercase text-xs font-semibold">Leave Type</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">From Date</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">To Date</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">Reason</TableHead>
+                  <TableHead className="uppercase text-xs font-semibold">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell className="capitalize font-medium">{request.leave_type} Leave</TableCell>
+                    <TableCell>{format(new Date(request.from_date), 'MMM d, yyyy')}</TableCell>
+                    <TableCell>{format(new Date(request.to_date), 'MMM d, yyyy')}</TableCell>
+                    <TableCell className="max-w-[200px] truncate">{request.reason || '-'}</TableCell>
+                    <TableCell>{getStatusBadge(request.status)}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {requests.map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell className="capitalize font-medium">{request.leave_type}</TableCell>
-                      <TableCell>{format(new Date(request.from_date), 'MMM d, yyyy')}</TableCell>
-                      <TableCell>{format(new Date(request.to_date), 'MMM d, yyyy')}</TableCell>
-                      <TableCell>{request.is_half_day ? 'Half Day' : 'Full Day'}</TableCell>
-                      <TableCell>{getStatusBadge(request.status)}</TableCell>
-                      <TableCell>{format(new Date(request.created_at), 'MMM d, yyyy')}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </DashboardLayout>
   );
 }

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar } from 'lucide-react';
 import { format, subDays } from 'date-fns';
 import { Navigate } from 'react-router-dom';
 
@@ -84,34 +84,40 @@ export default function AttendanceRecords() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Attendance Records</h1>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Filters</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Filters</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
-                <Label htmlFor="fromDate">From Date</Label>
-                <Input
-                  id="fromDate"
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => setFromDate(e.target.value)}
-                />
+                <Label htmlFor="fromDate" className="text-sm font-medium">From Date</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="fromDate"
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="toDate">To Date</Label>
-                <Input
-                  id="toDate"
-                  type="date"
-                  value={toDate}
-                  onChange={(e) => setToDate(e.target.value)}
-                />
+                <Label htmlFor="toDate" className="text-sm font-medium">To Date</Label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="toDate"
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label>Employee</Label>
+                <Label className="text-sm font-medium">Employee</Label>
                 <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select employee" />
@@ -120,7 +126,7 @@ export default function AttendanceRecords() {
                     <SelectItem value="all">All Employees</SelectItem>
                     {employees.map((emp) => (
                       <SelectItem key={emp.id} value={emp.id}>
-                        {emp.first_name} {emp.last_name} ({emp.employee_id})
+                        {emp.first_name} {emp.last_name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -130,9 +136,9 @@ export default function AttendanceRecords() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Records</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Attendance Records</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -144,12 +150,11 @@ export default function AttendanceRecords() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Employee</TableHead>
-                    <TableHead>Employee ID</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Time</TableHead>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="uppercase text-xs font-semibold">Employee Name</TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">Employee ID</TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">Date</TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -161,12 +166,10 @@ export default function AttendanceRecords() {
                       <TableCell>{record.profiles.employee_id}</TableCell>
                       <TableCell>{format(new Date(record.date), 'MMM d, yyyy')}</TableCell>
                       <TableCell>
-                        <Badge variant={record.status === 'present' ? 'default' : 'destructive'}>
+                        <Badge className={record.status === 'present' ? 'status-present' : 'status-absent'}>
                           {record.status === 'present' ? 'Present' : 'Absent'}
-                          {record.is_half_day && ' (Half Day)'}
                         </Badge>
                       </TableCell>
-                      <TableCell>{format(new Date(record.marked_at), 'h:mm a')}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

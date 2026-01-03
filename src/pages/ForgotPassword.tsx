@@ -48,14 +48,14 @@ export default function ForgotPassword() {
 
   if (sent) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-background p-4">
-        <Card className="w-full max-w-md text-center">
+      <div className="flex items-center justify-center min-h-screen bg-muted/30 p-4">
+        <Card className="w-full max-w-md text-center shadow-lg">
           <CardHeader>
-            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-secondary flex items-center justify-center">
               <Mail className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl font-semibold">Check Your Email</CardTitle>
+            <CardDescription className="text-base">
               We've sent a password reset link to <strong>{email}</strong>. Click the link in the email to reset your password.
             </CardDescription>
           </CardHeader>
@@ -73,34 +73,38 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md">
+    <div className="flex items-center justify-center min-h-screen bg-muted/30 p-4">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Forgot Password</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-semibold">Forgot Password</CardTitle>
+          <CardDescription className="text-base">
             Enter your email address and we'll send you a link to reset your password.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  required
+                />
+              </div>
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            <Button type="submit" className="w-full h-11 font-medium" disabled={loading}>
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Send Reset Link
             </Button>
           </form>
           <div className="mt-6 text-center">
-            <Link to="/login" className="text-sm text-primary hover:underline inline-flex items-center">
+            <Link to="/login" className="text-sm text-primary font-medium hover:underline inline-flex items-center">
               <ArrowLeft className="mr-1 h-4 w-4" />
               Back to Login
             </Link>

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, Calendar, Clock, BadgeCheck } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface AttendanceRecord {
@@ -51,14 +51,14 @@ export default function Attendance() {
     fetchAttendance();
   }, [profile]);
 
-  const markAttendance = async (status: 'present' | 'absent') => {
+  const markAttendance = async () => {
     if (!profile || todayMarked) return;
 
     setMarking(true);
     const { error } = await supabase.from('attendance').insert({
       employee_id: profile.id,
       date: today,
-      status,
+      status: 'present',
     });
     setMarking(false);
 
@@ -71,7 +71,7 @@ export default function Attendance() {
     } else {
       toast({
         title: 'Success',
-        description: `Attendance marked as ${status}.`,
+        description: 'Attendance marked as present.',
       });
       fetchAttendance();
     }
@@ -80,46 +80,34 @@ export default function Attendance() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">Attendance</h1>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Mark Today's Attendance</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Mark Today's Attendance</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
               <p className="text-muted-foreground">
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
-              {todayMarked ? (
-                <Badge variant="secondary">Already Marked</Badge>
-              ) : (
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => markAttendance('present')}
-                    disabled={marking}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    {marking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle className="mr-2 h-4 w-4" />}
-                    Mark Present
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={() => markAttendance('absent')}
-                    disabled={marking}
-                  >
-                    {marking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <XCircle className="mr-2 h-4 w-4" />}
-                    Mark Absent
-                  </Button>
-                </div>
-              )}
+              <Button
+                onClick={markAttendance}
+                disabled={marking || todayMarked}
+                className={todayMarked ? 'bg-muted text-muted-foreground' : 'bg-[hsl(145,63%,49%)] hover:bg-[hsl(145,63%,44%)]'}
+              >
+                {marking ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                )}
+                {todayMarked ? 'Attendance Marked' : 'Mark Present'}
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Attendance History</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Attendance History</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
@@ -131,23 +119,37 @@ export default function Attendance() {
             ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Marked At</TableHead>
+                  <TableRow className="bg-muted/50">
+                    <TableHead className="uppercase text-xs font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4" />
+                        Date
+                      </div>
+                    </TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4" />
+                        Time
+                      </div>
+                    </TableHead>
+                    <TableHead className="uppercase text-xs font-semibold">
+                      <div className="flex items-center gap-2">
+                        <BadgeCheck className="h-4 w-4" />
+                        Status
+                      </div>
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {records.map((record) => (
                     <TableRow key={record.id}>
                       <TableCell>{format(new Date(record.date), 'MMM d, yyyy')}</TableCell>
+                      <TableCell>{format(new Date(record.marked_at), 'h:mm a')}</TableCell>
                       <TableCell>
-                        <Badge variant={record.status === 'present' ? 'default' : 'destructive'}>
+                        <Badge className={record.status === 'present' ? 'status-present' : 'status-absent'}>
                           {record.status === 'present' ? 'Present' : 'Absent'}
-                          {record.is_half_day && ' (Half Day)'}
                         </Badge>
                       </TableCell>
-                      <TableCell>{format(new Date(record.marked_at), 'h:mm a')}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
