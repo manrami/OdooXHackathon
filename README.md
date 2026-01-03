@@ -1,73 +1,76 @@
-# Welcome to your Lovable project
+# DayFlow 🚀
 
-## Project info
+**DayFlow** is a premium, enterprise-grade Human Resource Management System (HRMS) designed for modern organizations. Built with a focus on high-fidelity user experience and robust functionality, DayFlow streamlines employee onboarding, attendance tracking, and monthly payroll processing within a stunning, glassmorphic dark-mode interface.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## ✨ Core Features
 
-## How can I edit this code?
+### 🎨 Premium User Experience
+- **Enterprise Dark Theme**: A deep-navy, high-contrast interface designed for professional environments.
+- **Glassmorphic UI**: Modern aesthetic with subtle translucency and neon accents.
+- **Responsive Layout**: Optimized for both high-end desktop workstations and administrative tablets.
 
-There are several ways of editing your application.
+### 👤 Identity & Onboarding
+- **Corporate ID Login**: Sophisticated identity mapping allows employees to log in using corporate IDs.
+- **Seamless Onboarding**: Effortless employee creation with automatic system initialization.
+- **Role-Based Access**: Secure differentiation between Administrator and Employee environments.
 
-**Use Lovable**
+### 📊 Administrative Suite
+- **Interactive Dashboard**: Real-time insights into organization-wide attendance and payroll status.
+- **Employee Directory**: Centralized management of staff records and department assignments.
+- **Attendance Intelligence**: Automated tracking of daily check-ins and check-outs.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+### 💸 Financial Management
+- **Automated Payroll**: One-click monthly salary generation with support for INR (₹) formatting.
+- **Structured Salary Tiers**: Customizable salary structures for different seniority levels.
+- **Financial History**: Persistent record-keeping of all historical payroll transactions.
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Technical Foundation
 
-**Use your preferred IDE**
+DayFlow is powered by a modern, high-performance tech stack:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- **Frontend**: React 18 with Vite for ultra-fast development and optimized bundles.
+- **Language**: TypeScript for enterprise-level type safety and reliability.
+- **Styling**: Tailwind CSS for high-performance, utility-first UI development.
+- **Components**: shadcn/ui for accessible, premium-feel interface elements.
+- **Backend**: Supabase for real-time database capabilities and secure authentication.
+- **Automation**: EmailJS for automated credential transmission and notifications.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 🚀 Getting Started
 
-Follow these steps:
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- npm or yarn
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Installation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+1. **Clone the repository**:
+   ```sh
+   git clone https://github.com/manrami/OdooXHackathon.git
+   cd OdooXHackathon
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+2. **Install dependencies**:
+   ```sh
+   npm install
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+3. **Environment Setup**:
+   Create a `.env` file in the root directory and add your Supabase and EmailJS credentials:
+   ```env
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_key
+   VITE_EMAILJS_SERVICE_ID=your_id
+   VITE_EMAILJS_TEMPLATE_ID=your_template
+   VITE_EMAILJS_PUBLIC_KEY=your_key
+   ```
 
-**Edit a file directly in GitHub**
+4. **Start Development Server**:
+   ```sh
+   npm run dev
+   ```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+## 🛰️ Architecture Highlights
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+DayFlow utilizes a secure, server-side identity architecture. Employee login is handled via specialized database functions that map corporate IDs to internal authentication secrets, ensuring that end-users enjoy a simplified login experience without compromising organization security.
