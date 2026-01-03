@@ -70,8 +70,8 @@ export default function Landing() {
               <Link to="/login">
                 <Button variant="ghost">Login</Button>
               </Link>
-              <Link to="/setup">
-                <Button>Get Started</Button>
+              <Link to="/signup">
+                <Button>Sign Up</Button>
               </Link>
             </div>
           </div>
@@ -94,9 +94,9 @@ export default function Landing() {
             employee management, attendance tracking, leave requests, and payroll processing.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/setup">
+            <Link to="/signup">
               <Button size="lg" className="px-8 gap-2">
-                Start Free Setup
+                Get Started Free
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
@@ -210,11 +210,11 @@ export default function Landing() {
             Ready to Transform Your HR?
           </h2>
           <p className="text-lg text-primary-foreground/80 mb-8 max-w-2xl mx-auto">
-            Set up your company in minutes and start managing your workforce more efficiently today.
+            Sign up today and start managing your workforce more efficiently.
           </p>
-          <Link to="/setup">
+          <Link to="/signup">
             <Button size="lg" variant="secondary" className="px-8 gap-2">
-              Get Started Free
+              Create Free Account
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
