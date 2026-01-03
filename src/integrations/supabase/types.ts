@@ -382,8 +382,15 @@ export type Database = {
         }
         Returns: string
       }
-      generate_admin_id: { Args: never; Returns: string }
-      generate_employee_id: { Args: never; Returns: string }
+      generate_custom_employee_id: {
+        Args: {
+          p_company_name?: string
+          p_first_name: string
+          p_hire_year?: number
+          p_last_name: string
+        }
+        Returns: string
+      }
       get_email_by_employee_id: {
         Args: { p_employee_id: string }
         Returns: string
