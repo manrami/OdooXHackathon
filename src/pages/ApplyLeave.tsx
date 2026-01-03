@@ -7,11 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Calendar } from 'lucide-react';
 
 export default function ApplyLeave() {
   const { profile } = useAuth();
@@ -23,13 +22,21 @@ export default function ApplyLeave() {
     fromDate: '',
     toDate: '',
     reason: '',
-    isHalfDay: false,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!profile) return;
+
+    if (!formData.fromDate || !formData.toDate) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select both from and to dates.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     if (new Date(formData.toDate) < new Date(formData.fromDate)) {
       toast({
@@ -47,7 +54,6 @@ export default function ApplyLeave() {
       from_date: formData.fromDate,
       to_date: formData.toDate,
       reason: formData.reason,
-      is_half_day: formData.isHalfDay,
     });
     setLoading(false);
 
@@ -68,17 +74,15 @@ export default function ApplyLeave() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-2xl">
-        <h1 className="text-3xl font-bold">Apply for Leave</h1>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Leave Request Form</CardTitle>
+      <div className="max-w-xl">
+        <Card className="shadow-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold">Leave Request Form</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="leaveType">Leave Type</Label>
+                <Label htmlFor="leaveType" className="text-sm font-medium">Leave Type</Label>
                 <Select
                   value={formData.leaveType}
                   onValueChange={(value) => setFormData({ ...formData, leaveType: value })}
@@ -95,38 +99,37 @@ export default function ApplyLeave() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="fromDate">From Date</Label>
-                  <Input
-                    id="fromDate"
-                    type="date"
-                    value={formData.fromDate}
-                    onChange={(e) => setFormData({ ...formData, fromDate: e.target.value })}
-                    required
-                  />
+                  <Label htmlFor="fromDate" className="text-sm font-medium">From Date</Label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="fromDate"
+                      type="date"
+                      value={formData.fromDate}
+                      onChange={(e) => setFormData({ ...formData, fromDate: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="toDate">To Date</Label>
-                  <Input
-                    id="toDate"
-                    type="date"
-                    value={formData.toDate}
-                    onChange={(e) => setFormData({ ...formData, toDate: e.target.value })}
-                    required
-                  />
+                  <Label htmlFor="toDate" className="text-sm font-medium">To Date</Label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="toDate"
+                      type="date"
+                      value={formData.toDate}
+                      onChange={(e) => setFormData({ ...formData, toDate: e.target.value })}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="halfDay"
-                  checked={formData.isHalfDay}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isHalfDay: checked as boolean })}
-                />
-                <Label htmlFor="halfDay" className="font-normal">Half Day Leave</Label>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="reason">Reason</Label>
+                <Label htmlFor="reason" className="text-sm font-medium">Reason</Label>
                 <Textarea
                   id="reason"
                   placeholder="Enter reason for leave..."
@@ -136,7 +139,7 @@ export default function ApplyLeave() {
                 />
               </div>
 
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" className="w-full h-11 font-medium" disabled={loading}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Submit Request
               </Button>

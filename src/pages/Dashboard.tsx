@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
-import { Clock, FileText, Users, CheckSquare } from 'lucide-react';
+import { Clock, FileText, Users, BadgeCheck } from 'lucide-react';
 
 interface Stats {
   todayAttendance: string;
@@ -61,16 +61,22 @@ export default function Dashboard() {
     fetchStats();
   }, [profile, role]);
 
+  const getAttendanceColor = (status: string) => {
+    if (status === 'Present') return 'text-[hsl(145,63%,49%)]';
+    if (status === 'Absent') return 'text-[hsl(6,78%,57%)]';
+    return 'text-muted-foreground';
+  };
+
   const adminCards = [
-    { title: 'Total Employees', value: stats.totalEmployees, icon: Users, color: 'text-blue-400' },
-    { title: "Today's Attendance", value: stats.todayPresentCount, icon: Clock, color: 'text-green-400' },
-    { title: 'Pending Leave Requests', value: stats.pendingLeaves, icon: FileText, color: 'text-yellow-400' },
+    { title: 'Total Employees', value: stats.totalEmployees, icon: Users },
+    { title: 'Attendance Today', value: stats.todayPresentCount, icon: Clock },
+    { title: 'Pending Leave Requests', value: stats.pendingLeaves, icon: FileText },
   ];
 
   const employeeCards = [
-    { title: "Today's Status", value: stats.todayAttendance, icon: Clock, color: 'text-blue-400' },
-    { title: 'Total Leaves Taken', value: stats.totalLeaves, icon: CheckSquare, color: 'text-green-400' },
-    { title: 'Pending Requests', value: stats.pendingLeaves, icon: FileText, color: 'text-yellow-400' },
+    { title: "Today's Attendance", value: stats.todayAttendance, icon: Clock, isStatus: true },
+    { title: 'Total Leaves', value: stats.totalLeaves, icon: FileText },
+    { title: 'Pending Requests', value: stats.pendingLeaves, icon: BadgeCheck },
   ];
 
   const cards = role === 'admin' ? adminCards : employeeCards;
@@ -78,26 +84,21 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Welcome, {profile?.first_name}!
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {role === 'admin' ? 'Admin Dashboard' : 'Employee Dashboard'}
-          </p>
-        </div>
-
         <div className="grid gap-6 md:grid-cols-3">
           {cards.map((card) => (
-            <Card key={card.title}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  {card.title}
-                </CardTitle>
-                <card.icon className={`h-5 w-5 ${card.color}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{card.value}</div>
+            <Card key={card.title} className="shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-secondary flex items-center justify-center">
+                    <card.icon className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">{card.title}</p>
+                    <p className={`text-2xl font-semibold ${card.isStatus ? getAttendanceColor(card.value as string) : 'text-foreground'}`}>
+                      {card.value}
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
