@@ -13,8 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Loader2, Search, Mail, Building, BadgeCheck, 
+import {
+  Loader2, Search, Mail, Building, BadgeCheck,
   Phone, MapPin, Calendar, Briefcase, DollarSign, Plane, Circle,
   Pencil, Trash2, UserPlus
 } from 'lucide-react';
@@ -66,7 +66,7 @@ export default function Employees() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [attendanceMap, setAttendanceMap] = useState<Map<string, string>>(new Map());
-  
+
   // Edit form state
   const [editForm, setEditForm] = useState({
     first_name: '',
@@ -89,9 +89,10 @@ export default function Employees() {
 
   const fetchEmployees = async () => {
     const today = new Date().toISOString().split('T')[0];
-    
+
+    // Exclude archived employees strictly
     const [profilesRes, rolesRes, attendanceRes] = await Promise.all([
-      supabase.from('profiles').select('*').order('first_name'),
+      supabase.from('profiles').select('*').neq('department', 'Archived').order('first_name'),
       supabase.from('user_roles').select('user_id, role'),
       supabase.from('attendance').select('employee_id, status').eq('date', today),
     ]);
@@ -119,7 +120,7 @@ export default function Employees() {
     fetchEmployees();
 
     // Subscribe to real-time attendance changes
-    const channel = supabase
+    const attendanceChannel = supabase
       .channel('attendance-changes')
       .on(
         'postgres_changes',
@@ -149,8 +150,27 @@ export default function Employees() {
       )
       .subscribe();
 
+    // Subscribe to real-time Profile changes (for Deletions/Updates)
+    const profilesChannel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+        },
+        (payload) => {
+          // Reload employees on any profile change to be safe and accurate
+          // Or we can manipulate state directly. Reloading is safer for "Archived" filtering.
+          fetchEmployees();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(attendanceChannel);
+      supabase.removeChannel(profilesChannel);
     };
   }, []);
 
@@ -187,7 +207,7 @@ export default function Employees() {
 
   const handleSaveEdit = async () => {
     if (!selectedEmployee) return;
-    
+
     setSaving(true);
     try {
       const { error } = await supabase
@@ -230,23 +250,63 @@ export default function Employees() {
 
   const handleConfirmDelete = async () => {
     if (!selectedEmployee) return;
-    
+
     setSaving(true);
     try {
-      // Note: This will delete the profile. The auth user would need to be deleted separately via admin API
-      const { error } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', selectedEmployee.id);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Employee Removed',
-        description: 'Employee has been removed from the system.',
+      // Use the delete_employee RPC function to properly delete from both auth.users and profiles
+      const { data, error } = await supabase.rpc('delete_employee', {
+        p_user_id: selectedEmployee.id
       });
 
+      if (error) {
+        // If RPC doesn't exist, fallback to old method
+        console.warn('delete_employee RPC not found, using fallback:', error);
+
+        // Fallback: Try direct delete from profiles
+        const { error: deleteError, count } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('id', selectedEmployee.id)
+          .select('*', { count: 'exact' });
+
+        if (deleteError) throw deleteError;
+
+        // If RLS blocked the delete (count === 0), we fallback to "Soft Archive"
+        if (count === 0) {
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ department: 'Archived' }) // We use this as a flag
+            .eq('id', selectedEmployee.id);
+
+          if (updateError) throw updateError;
+
+          toast({
+            title: 'Employee Archived',
+            description: 'Employee could not be permanently deleted due to permissions, but has been archived and hidden.',
+          });
+        } else {
+          toast({
+            title: 'Employee Removed',
+            description: 'Employee has been removed from the system.',
+          });
+        }
+      } else {
+        // RPC succeeded
+        if (data?.success) {
+          toast({
+            title: '✅ Employee Deleted',
+            description: `${data.deleted_name || 'Employee'} has been permanently removed from the system.`,
+          });
+        } else {
+          throw new Error(data?.message || 'Failed to delete employee');
+        }
+      }
+
+      // Update local state immediately to reflect change (Optimistic UI)
+      setEmployees(prev => prev.filter(emp => emp.id !== selectedEmployee.id));
+
       setDeleteOpen(false);
+      // Refresh to sync with server
       fetchEmployees();
     } catch (error: any) {
       toast({
@@ -260,6 +320,9 @@ export default function Employees() {
   };
 
   const filteredEmployees = employees.filter((emp) => {
+    // Hide archived employees
+    if (emp.department === 'Archived') return false;
+
     const searchLower = search.toLowerCase();
     return (
       emp.first_name.toLowerCase().includes(searchLower) ||
@@ -280,7 +343,7 @@ export default function Employees() {
 
   const getAttendanceIndicator = (employeeId: string) => {
     const status = attendanceMap.get(employeeId);
-    
+
     if (status === 'present') {
       return (
         <div className="absolute top-3 right-3" title="Present">
@@ -300,7 +363,7 @@ export default function Employees() {
         </div>
       );
     }
-    
+
     return (
       <div className="absolute top-3 right-3" title="No attendance marked">
         <Circle className="h-4 w-4 text-gray-300" />
@@ -354,8 +417,8 @@ export default function Employees() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredEmployees.map((employee) => (
-              <Card 
-                key={employee.id} 
+              <Card
+                key={employee.id}
                 className="shadow-sm hover:shadow-md transition-shadow cursor-pointer relative"
                 onClick={() => handleCardClick(employee)}
               >
@@ -382,7 +445,7 @@ export default function Employees() {
                         <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <span className="truncate text-foreground">{employee.email}</span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-sm">
                         <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <span className="text-foreground">{employee.department || 'Not Assigned'}</span>
@@ -482,7 +545,7 @@ export default function Employees() {
                       <div className="min-w-0">
                         <p className="text-xs text-muted-foreground">Hire Date</p>
                         <p className="font-medium text-sm">
-                          {selectedEmployee.hire_date 
+                          {selectedEmployee.hire_date
                             ? format(new Date(selectedEmployee.hire_date), 'MMM d, yyyy')
                             : '-'}
                         </p>
@@ -514,16 +577,16 @@ export default function Employees() {
 
                 {/* Action Buttons */}
                 <div className="flex gap-3 pt-2 pb-1">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="flex-1 gap-2"
                     onClick={() => handleEditClick(selectedEmployee)}
                   >
                     <Pencil className="h-4 w-4" />
                     Edit
                   </Button>
-                  <Button 
-                    variant="destructive" 
+                  <Button
+                    variant="destructive"
                     className="flex-1 gap-2"
                     onClick={() => handleDeleteClick(selectedEmployee)}
                   >
@@ -573,8 +636,8 @@ export default function Employees() {
 
               <div className="space-y-2">
                 <Label htmlFor="department">Department</Label>
-                <Select 
-                  value={editForm.department} 
+                <Select
+                  value={editForm.department}
                   onValueChange={(value) => setEditForm({ ...editForm, department: value })}
                 >
                   <SelectTrigger>
@@ -693,7 +756,7 @@ export default function Employees() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 onClick={handleConfirmDelete}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >

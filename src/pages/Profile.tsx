@@ -9,8 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { 
-  Loader2, UserCircle, Lock, Camera, Edit, Save, X, 
+import {
+  Loader2, UserCircle, Lock, Camera, Edit, Save, X,
   MapPin, Phone, Briefcase, Calendar, Building, Mail,
   Award, Lightbulb, FileText
 } from 'lucide-react';
@@ -42,14 +42,14 @@ export default function Profile() {
   const { toast } = useToast();
   const { uploadAvatar, uploading } = useAvatarUpload(profile?.id);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [passwords, setPasswords] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
   const [changingPassword, setChangingPassword] = useState(false);
-  
+
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState<ProfileData>({
@@ -137,7 +137,7 @@ export default function Profile() {
 
   const handleSaveProfile = async () => {
     if (!profile?.id) return;
-    
+
     setSaving(true);
     const { error } = await supabase
       .from('profiles')
@@ -218,7 +218,7 @@ export default function Profile() {
                   onChange={handleAvatarChange}
                 />
               </div>
-              
+
               <div className="text-center sm:text-left flex-1">
                 <h2 className="text-2xl font-bold">{profile?.first_name} {profile?.last_name}</h2>
                 <p className="text-muted-foreground">{profile?.email}</p>
@@ -232,7 +232,7 @@ export default function Profile() {
                   </span>
                 </div>
               </div>
-              
+
               {!isEditing && (
                 <Button variant="outline" onClick={handleStartEditing}>
                   <Edit className="h-4 w-4 mr-2" />
@@ -271,7 +271,7 @@ export default function Profile() {
                   </Label>
                   <p className="font-medium">{profile?.first_name} {profile?.last_name}</p>
                 </div>
-                
+
                 <div className="space-y-1">
                   <Label className="text-sm text-muted-foreground flex items-center gap-2">
                     <Mail className="h-4 w-4" />
@@ -279,7 +279,7 @@ export default function Profile() {
                   </Label>
                   <p className="font-medium">{profile?.email}</p>
                 </div>
-                
+
                 <div className="space-y-1">
                   <Label className="text-sm text-muted-foreground flex items-center gap-2">
                     <Building className="h-4 w-4" />
@@ -372,7 +372,7 @@ export default function Profile() {
               {/* About, Skills, Certifications */}
               <div className="space-y-4">
                 <h4 className="text-sm font-semibold text-muted-foreground uppercase">About & Skills</h4>
-                
+
                 <div className="space-y-1">
                   <Label className="text-sm text-muted-foreground flex items-center gap-2">
                     <FileText className="h-4 w-4" />

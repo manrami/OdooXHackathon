@@ -8,11 +8,12 @@ import { AuthProvider } from "@/contexts/AuthContext";
 // Pages
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
-import SignUp from "./pages/SignUp";
+import EmergencyAdmin from "./pages/EmergencyAdmin";
 import CompanySetup from "./pages/CompanySetup";
 import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import ChangePassword from "./pages/ChangePassword";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
 import CreateEmployee from "./pages/CreateEmployee";
@@ -24,6 +25,7 @@ import Profile from "./pages/Profile";
 import Payroll from "./pages/Payroll";
 import AdminPayroll from "./pages/AdminPayroll";
 import NotFound from "./pages/NotFound";
+import EmergencySetup from "./pages/EmergencySetup";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +39,9 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
+            <Route path="/change-password" element={<ChangePassword />} />
+            {/* Signup route removed as per requirements */}
+            <Route path="/emergency-admin" element={<EmergencyAdmin />} />
             <Route path="/setup" element={<CompanySetup />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -52,6 +56,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/payroll" element={<Payroll />} />
             <Route path="/payroll/manage" element={<AdminPayroll />} />
+            <Route path="/emergency-setup" element={<EmergencySetup />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
