@@ -57,9 +57,9 @@ export default function Employees() {
   }
 
   useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+
     const fetchEmployees = async () => {
-      const today = new Date().toISOString().split('T')[0];
-      
       const [profilesRes, rolesRes, attendanceRes] = await Promise.all([
         supabase.from('profiles').select('*').order('first_name'),
         supabase.from('user_roles').select('user_id, role'),
@@ -85,6 +85,42 @@ export default function Employees() {
     };
 
     fetchEmployees();
+
+    // Subscribe to real-time attendance changes
+    const channel = supabase
+      .channel('attendance-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'attendance',
+          filter: `date=eq.${today}`,
+        },
+        (payload) => {
+          console.log('Attendance change:', payload);
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+            const newRecord = payload.new as AttendanceStatus;
+            setAttendanceMap((prev) => {
+              const updated = new Map(prev);
+              updated.set(newRecord.employee_id, newRecord.status);
+              return updated;
+            });
+          } else if (payload.eventType === 'DELETE') {
+            const oldRecord = payload.old as AttendanceStatus;
+            setAttendanceMap((prev) => {
+              const updated = new Map(prev);
+              updated.delete(oldRecord.employee_id);
+              return updated;
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleCardClick = (employee: Profile & { role?: string }) => {
